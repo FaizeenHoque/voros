@@ -2,6 +2,6 @@
 #define KERNEL_H
 
 void kernel_main();
-void print(const char *str);
+void print(const char* str);
 
 #endif

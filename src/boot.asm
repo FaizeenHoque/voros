@@ -14,9 +14,9 @@ start:
   mov sp, 0x7c00
   sti
 
-  mov al, 'B'
-  mov dx, 0x3F8
-  out dx, al
+  ; mov al, 'B'
+  ; mov dx, 0x3F8
+  ; out dx, al
 
   mov ax, 0x0000
   mov ds, ax
@@ -33,37 +33,36 @@ start:
 
   jc disk_read_error
 
-  mov al, 'K'
-  mov dx, 0x3F8
-  out dx, al
+  ; mov al, 'K'
+  ; mov dx, 0x3F8
+  ; out dx, al
 
-  mov al, 'G'
-  mov dx, 0x3F8
-  out dx, al
+  ; mov al, 'G'
+  ; mov dx, 0x3F8
+  ; out dx, al
 
   cli 
   lgdt [gdt_descriptor]
 
-  mov al, 'D'
-  mov dx, 0x3F8
-  out dx, al
+  ; mov al, 'D'
+  ; mov dx, 0x3F8
+  ; out dx, al
 
   mov eax, cr0
   or al, 1
   mov cr0, eax
 
-  mov al, 'M'
-  mov dx, 0x3F8
-  out dx, al
+  ; mov al, 'M'
+  ; mov dx, 0x3F8
+  ; out dx, al
   
-  ; Verify we're in protected mode - read CR0
   mov eax, cr0
   test eax, 1
   jz pmode_failed
   
-  mov al, '+'
-  mov dx, 0x3F8
-  out dx, al
+  ; mov al, '+'
+  ; mov dx, 0x3F8
+  ; out dx, al
   
   ; Set up segment registers for protected mode
   mov ax, DATA_OFFSET    ; Load data segment selector
@@ -73,9 +72,9 @@ start:
   mov gs, ax
   mov ss, ax
   
-  mov al, 'S'
-  mov dx, 0x3F8
-  out dx, al
+  ; mov al, 'S'
+  ; mov dx, 0x3F8
+  ; out dx, al
   
   ; Far jump with correct 16-bit encoding
   db 0xEA
