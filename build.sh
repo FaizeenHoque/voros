@@ -1,5 +1,6 @@
 #!/bin/bash
-export PREFIX="$HOME/opt/cross"
-export TARGET=i686-elf
-export PATH="$PREFIX/bin:$PATH"
-make burn
+
+make clean
+make 
+./create_iso.sh
+./create_disk_image.sh
