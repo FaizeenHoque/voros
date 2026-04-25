@@ -1,7 +1,12 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include <limine.h>
+#include "limine.h"
+#include "font.h"
+#include "colors.h"
+#include "gdt.h"
+#include "idt.h"
+#include "pic.h"
 
 // Set the base revision to 6, this is recommended as this is the latest
 // base revision described by the Limine boot protocol specification.
@@ -94,6 +99,43 @@ static void hcf(void) {
     }
 }
 
+uint16_t cursor_x = 0, cursor_y = 0;
+
+void printc(const char* str, uint32_t color) {
+    struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
+    volatile uint32_t *fb_ptr = framebuffer->address;
+
+    for (int i = 0; str[i] != '\0'; i++)
+    {
+        if (str[i] == '\n')
+        {
+            cursor_x = 0;
+            cursor_y += 16;
+            continue;
+        }
+
+        if (cursor_x + 6 > framebuffer->width) {
+            cursor_x = 0;
+            cursor_y += 16;
+        }
+
+        const uint8_t *glyph = vga_font[(uint8_t)str[i]];
+        for (int row = 0; row < 16; row++)
+        {
+            for (int col = 0; col < 8; col++)
+            {
+                uint32_t c = (glyph[row] & (0x80 >> col)) ? color : 0x000000;
+                fb_ptr[(cursor_y + row) * (framebuffer->pitch / 4) + (cursor_x + col)] = c;
+            }
+        }
+
+        cursor_x += 8;
+
+    }
+
+}
+
+
 // The following will be our kernel's entry point.
 // If renaming kmain() to something else, make sure to change the
 // linker script accordingly.
@@ -112,17 +154,13 @@ void kmain(void) {
     // Fetch the first framebuffer.
     struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
 
-    // Print a nice pattern to screen as an example.
-    // Note: we assume the framebuffer model is RGB with 32-bit pixels.
-    volatile uint32_t *fb_ptr = framebuffer->address;
-    for (size_t y = 0; y < framebuffer->height; y++) {
-        for (size_t x = 0; x < framebuffer->width; x++) {
-            uint32_t nX = x * 255 / framebuffer->width;
-            uint32_t nY = y * 255 / framebuffer->height;
-            fb_ptr[y * (framebuffer->pitch / 4) + x] = (nY << 8) | nX;
-        }
-    }
-
+    printc("Kernel Initialized\n", COLOR_TERMINAL_GREEN);
+    gdt_init();
+    printc("GDT loaded\n", COLOR_YELLOW);
+    idt_init();
+    printc("IDT loaded\n", COLOR_YELLOW);
+    pic_remap();
+    printc("PIC remapped\n", COLOR_YELLOW);
 
     // We're done, just hang...
     hcf();
