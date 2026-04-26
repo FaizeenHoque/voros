@@ -4,6 +4,7 @@ static idt_entry_t idt[256];
 static idtr_t idtr;
 
 extern void idt_flush(idtr_t *idtr);
+extern void irq1_stub(void);
 
 static void exception_handler(void) {
     for(;;) asm("hlt");
@@ -25,6 +26,8 @@ void idt_init(void) {
     for (int i = 0; i < 256; i++) {
         idt_set_entry(i, exception_handler, 0x8E);
     }
+
+    idt_set_entry(33, irq1_stub, 0x8E);
 
     idtr.limit = (sizeof(idt_entry_t) * 256) - 1;
     idtr.base  = (uint64_t)&idt;

@@ -7,23 +7,56 @@
 #define PIC2_DATA    0xA1
 
 void pic_remap(void) {
-    // ICW1: start initialization sequence
     outb(PIC1_COMMAND, 0x11);
     outb(PIC2_COMMAND, 0x11);
 
-    // ICW2: set vector offsets
-    outb(PIC1_DATA, 0x20);  // master PIC starts at vector 32
-    outb(PIC2_DATA, 0x28);  // slave PIC starts at vector 40
+    outb(PIC1_DATA, 0x20);
+    outb(PIC2_DATA, 0x28);
 
-    // ICW3: tell master there's a slave at IRQ2, tell slave its cascade identity
     outb(PIC1_DATA, 0x04);
     outb(PIC2_DATA, 0x02);
 
-    // ICW4: set 8086 mode
     outb(PIC1_DATA, 0x01);
     outb(PIC2_DATA, 0x01);
 
-    // mask all IRQs for now
     outb(PIC1_DATA, 0xFF);
     outb(PIC2_DATA, 0xFF);
+}
+
+void pic_send_eoi(uint8_t irq) {
+    if (irq >= 8) {
+        outb(PIC2_COMMAND, 0x20);
+    }
+
+    outb(PIC1_COMMAND, 0x20);
+}
+
+void pic_set_mask(uint8_t irq_line) {
+    uint16_t port;
+    uint8_t value;
+
+    if (irq_line < 8) {
+        port = PIC1_DATA;
+    } else {
+        port = PIC2_DATA;
+        irq_line -= 8;
+    }
+
+    value = inb(port) | (1 << irq_line);
+    outb(port, value);
+}
+
+void pic_clear_mask(uint8_t irq_line) {
+    uint16_t port;
+    uint8_t value;
+
+    if (irq_line < 8) {
+        port = PIC1_DATA;
+    } else {
+        port = PIC2_DATA;
+        irq_line -= 8;
+    }
+
+    value = inb(port) & (uint8_t)~(1 << irq_line);
+    outb(port, value);
 }
