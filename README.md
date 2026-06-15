@@ -82,6 +82,10 @@ Or manually:
 ```bash
 qemu-system-x86_64 -cdrom image.iso
 ```
+on real hardware, Flash voros.iso to a USB drive using:
+- Rufus (Windows)
+- balenaEtcher
+- dd (Linux)
 
 ## Cleaning
 
